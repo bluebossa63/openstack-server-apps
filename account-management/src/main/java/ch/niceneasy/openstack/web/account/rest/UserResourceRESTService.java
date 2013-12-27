@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.Timeout;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.mail.Address;
@@ -13,6 +14,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.persistence.EntityManager;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,6 +29,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.codec.binary.Hex;
+
+import ch.niceneasy.openstack.web.account.model.PendingRegistration;
 
 import com.woorea.openstack.keystone.Keystone;
 import com.woorea.openstack.keystone.model.Access;
@@ -52,9 +56,10 @@ public class UserResourceRESTService {
 	@Context
 	private ServletContext servletContext;
 
-	// TODO: replace with database...
 	@Inject
-	Map<String, User> pendingConfirmations;
+	private EntityManager em;
+//	@Inject
+//	Map<String, User> pendingConfirmations;
 
 	@Inject
 	private Map<String, Role> roles;
@@ -95,7 +100,8 @@ public class UserResourceRESTService {
 
 	@PUT
 	public User createUser(User pUser) {
-		String token = new UID().toString();
+		PendingRegistration pendingRegistration = new PendingRegistration(pUser);
+		String token = pendingRegistration.getId();
 		token = new String(Hex.encodeHex(token.getBytes()));
 		try {
 			MimeMessage m = new MimeMessage(mailSession);
@@ -114,7 +120,7 @@ public class UserResourceRESTService {
 							+ "/rest/users/confirm?token=" + token,
 					"text/plain");
 			Transport.send(m);
-			pendingConfirmations.put(token, pUser);
+			em.persist(pendingRegistration);
 
 		} catch (Exception e) {
 			logger.severe(e.getLocalizedMessage());
@@ -132,7 +138,8 @@ public class UserResourceRESTService {
 	@Path("/confirm")
 	@GET
 	public User confirmUser(@QueryParam("token") String token) {
-		User user = pendingConfirmations.get(token);
+		PendingRegistration pendingRegistration =  em.find(PendingRegistration.class, token);
+		User user = pendingRegistration.getUser();
 		if (user == null) {
 			throw new RuntimeException("token does not match");
 		}
@@ -154,6 +161,7 @@ public class UserResourceRESTService {
 				.addUser(tenant.getId(), user.getId(),
 						roles.get("Member").getId()).execute();
 		logger.info(user.toString());
+		em.remove(pendingRegistration);
 		return user;
 	}
 
