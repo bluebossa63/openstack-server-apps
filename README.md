@@ -1,2 +1,0 @@
-openstack-server-apps
-=====================

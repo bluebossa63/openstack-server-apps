@@ -1,0 +1,52 @@
+h1. Server Components for Android Client with OpenStack Java SDK v2.0
+
+h1. Important
+
+You will need the sources from https://github.com/woorea/openstack-java-sdk
+
+openstack-client
+keystone-client
+keystone-model
+swift-client
+swift-model
+
+are referenced by maven so please build these prerequisites first.
+The patch located in the doc directory has to be applied before building the project.
+
+
+h2. Maven
+
+The project is fully mavenized but the artefacts are not available in public repositories.
+
+
+h3. Maven Repositories
+
+http://nexus.niceneasy.ch/nexus/content/groups/public/
+
+
+h1. Available artifacts
+
+h2. JEE WAR as signup service for openstack (swift) clients
+
+intended as a proof of concept
+
+
+h1. License
+
+<pre>
+This software is licensed under the Apache 2 license, quoted below.
+
+Copyright 2013 Daniele Ulrich, nice'n'easy it GmbH
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+</pre>
