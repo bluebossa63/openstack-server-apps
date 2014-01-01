@@ -28,7 +28,16 @@ h1. Available artifacts
 
 h2. JEE WAR as signup service for openstack (swift) clients
 
-intended as a proof of concept
+intended as a proof of concept, tested on a JBoss AS 7.1.0.Final 
+
+http://www.jboss.org/jbossas/downloads/
+
+Please review the settings of the openstack implementation of your choice in
+src/main/ressources/openstack.properties
+
+These settings will be transmitted to the android client on successful login (after signup if neccessary).
+
+A signup consist of a mail check step and the creation of a user and a tenant with the name of the user. 
 
 
 h1. License

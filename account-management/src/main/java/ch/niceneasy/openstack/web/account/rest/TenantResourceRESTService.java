@@ -1,5 +1,6 @@
 package ch.niceneasy.openstack.web.account.rest;
 
+import javax.ejb.Stateless;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
@@ -16,7 +17,6 @@ import com.woorea.openstack.keystone.model.Tenant;
 @Path("/tenants")
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
-@RequestScoped
 public class TenantResourceRESTService {
 	
 	   @PUT
