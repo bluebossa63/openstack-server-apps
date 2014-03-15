@@ -1,7 +1,6 @@
 package ch.niceneasy.openstack.web.account.rest;
 
-import org.codehaus.jackson.map.annotate.JsonRootName;
-
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.woorea.openstack.keystone.model.User;
 
 @JsonRootName("loginConfirmation")
@@ -14,6 +13,7 @@ public class LoginConfirmation {
 	private String tenantName;
 	private String novaEndpoint;
 	private String ceilometerEndpoint;
+	private String swiftUrl;
 	
 	public User getUser() {
 		return user;
@@ -56,6 +56,12 @@ public class LoginConfirmation {
 	}
 	public void setCeilometerEndpoint(String ceilometerEndpoint) {
 		this.ceilometerEndpoint = ceilometerEndpoint;
+	}
+	public String getSwiftUrl() {
+		return swiftUrl;
+	}
+	public void setSwiftUrl(String swiftUrl) {
+		this.swiftUrl = swiftUrl;
 	}
 	
 }

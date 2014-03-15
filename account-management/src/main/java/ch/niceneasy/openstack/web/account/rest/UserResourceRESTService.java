@@ -28,9 +28,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import ch.niceneasy.openstack.web.account.model.PendingRegistration;
+import ch.niceneasy.openstack.web.account.model.PendingRegistrationService;
 
 import com.woorea.openstack.keystone.Keystone;
 import com.woorea.openstack.keystone.model.Access;
@@ -57,9 +59,7 @@ public class UserResourceRESTService {
 	private ServletContext servletContext;
 
 	@Inject
-	private EntityManager em;
-//	@Inject
-//	Map<String, User> pendingConfirmations;
+	PendingRegistrationService pendingRegistrationService;
 
 	@Inject
 	private Map<String, Role> roles;
@@ -120,7 +120,7 @@ public class UserResourceRESTService {
 							+ "/rest/users/confirm?token=" + token,
 					"text/plain");
 			Transport.send(m);
-			em.persist(pendingRegistration);
+			pendingRegistrationService.persist(pendingRegistration);
 
 		} catch (Exception e) {
 			logger.severe(e.getLocalizedMessage());
@@ -138,7 +138,13 @@ public class UserResourceRESTService {
 	@Path("/confirm")
 	@GET
 	public User confirmUser(@QueryParam("token") String token) {
-		PendingRegistration pendingRegistration =  em.find(PendingRegistration.class, token);
+		String key = null;
+		try {
+			key = new String(Hex.decodeHex(token.toCharArray()));
+		} catch (DecoderException e) {
+			throw new RuntimeException(e);
+		}
+		PendingRegistration pendingRegistration =  pendingRegistrationService.find(key);
 		User user = pendingRegistration.getUser();
 		if (user == null) {
 			throw new RuntimeException("token does not match");
@@ -161,7 +167,7 @@ public class UserResourceRESTService {
 				.addUser(tenant.getId(), user.getId(),
 						roles.get("Member").getId()).execute();
 		logger.info(user.toString());
-		em.remove(pendingRegistration);
+		pendingRegistrationService.remove(pendingRegistration);
 		return user;
 	}
 
@@ -176,7 +182,8 @@ public class UserResourceRESTService {
 						new UsernamePassword(pUser.getUsername(), pUser.getPassword())).withTenantName(pUser.getUsername()).execute();		
 		logger.info(access.getUser().toString());
 		User user = keystone.users().show(access.getUser().getId()).execute();
-		
+		//password is not transmitted anymore...
+		user.setPassword(pUser.getPassword());
 		loginConfirmation.setUser(user);
 		loginConfirmation.setTenantName(pUser.getUsername());
 		return loginConfirmation;

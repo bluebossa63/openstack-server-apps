@@ -30,14 +30,10 @@ import com.woorea.openstack.keystone.model.authentication.UsernamePassword;
 @Startup
 public class Configuration {
 
-	
 	Map<String, User> pendingConfirmations = new HashMap<String, User>();
-	
+
 	private Map<String, String> configuration = new HashMap<String, String>();
 	private Map<String, Role> roles = new HashMap<String, Role>();
-
-	private Keystone keystone;
-	private Access access;
 
 	public static Configuration INSTANCE;
 
@@ -66,16 +62,23 @@ public class Configuration {
 			logger.severe(e.getMessage());
 		}
 	}
-	
-	
-	@Produces @CurrentUser LoginConfirmation getLoginInformation(InjectionPoint point) {
+
+	@Produces
+	@CurrentUser
+	LoginConfirmation getLoginInformation(InjectionPoint point) {
 		LoginConfirmation loginConfirmation = new LoginConfirmation();
-		loginConfirmation.setCeilometerEndpoint(configuration.get("ceilometerEndpoint"));
-		loginConfirmation.setKeystoneAdminAuthUrl(configuration.get("keystoneAdminAuthUrl"));
-		loginConfirmation.setKeystoneAuthUrl(configuration.get("keystoneAuthUrl"));
-		loginConfirmation.setKeystoneEndpoint(configuration.get("keystoneEndpoint"));
+		loginConfirmation.setCeilometerEndpoint(configuration
+				.get("ceilometerEndpoint"));
+		loginConfirmation.setKeystoneAdminAuthUrl(configuration
+				.get("keystoneExternalAdminAuthUrl"));
+		loginConfirmation.setKeystoneAuthUrl(configuration
+				.get("keystoneExternalAuthUrl"));
+		loginConfirmation.setKeystoneEndpoint(configuration
+				.get("keystoneExternalEndpoint"));
 		loginConfirmation.setNovaEndpoint(configuration.get("novaEndpoint"));
 		loginConfirmation.setTenantName(configuration.get("tenantName"));
+		loginConfirmation.setSwiftUrl(configuration
+				.get("swiftExternalEndpoint"));
 		return loginConfirmation;
 	}
 
@@ -95,19 +98,17 @@ public class Configuration {
 
 	@Produces
 	public Keystone getKeystone(InjectionPoint point) {
-		if (keystone == null) {
-			keystone = new Keystone(configuration.get("keystoneAuthUrl"));
-			access = keystone
-					.tokens()
-					.authenticate(
-							new UsernamePassword(configuration
-									.get("keystoneUsername"), configuration
-									.get("keystonePassword")))
-					.withTenantName("admin").execute();
-			keystone = new Keystone(configuration.get("keystoneAdminAuthUrl"));
-			keystone.setTokenProvider(new OpenStackSimpleTokenProvider(access
-					.getToken().getId()));
-		}
+		Keystone keystone = new Keystone(configuration.get("keystoneAuthUrl"));
+		Access access = keystone
+				.tokens()
+				.authenticate(
+						new UsernamePassword(configuration
+								.get("keystoneUsername"), configuration
+								.get("keystonePassword")))
+				.withTenantName("admin").execute();
+		keystone = new Keystone(configuration.get("keystoneAdminAuthUrl"));
+		keystone.setTokenProvider(new OpenStackSimpleTokenProvider(access
+				.getToken().getId()));
 		return keystone;
 	}
 
@@ -115,11 +116,8 @@ public class Configuration {
 	public Map<String, User> getPendingConfirmations(InjectionPoint point) {
 		return pendingConfirmations;
 	}
-	
-	public void resetConnection() {
-		this.keystone = null;
-		this.access = null;
-	}
+
+	public void resetConnection() {	}
 
 	@Produces
 	public Map<String, Role> getRoles() {
