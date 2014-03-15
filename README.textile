@@ -11,7 +11,6 @@ swift-client
 swift-model
 
 are referenced by maven so please build these prerequisites first.
-The patch located in the doc directory has to be applied before building the project.
 
 
 h2. Maven
