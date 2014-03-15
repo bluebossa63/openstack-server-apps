@@ -2,7 +2,7 @@ h1. Server Components for Android Client with OpenStack Java SDK v2.0
 
 h1. Important
 
-You will need the sources from https://github.com/woorea/openstack-java-sdk
+You will need the sources from https://github.com/bluebossa63/openstack-java-sdk
 
 openstack-client
 keystone-client
