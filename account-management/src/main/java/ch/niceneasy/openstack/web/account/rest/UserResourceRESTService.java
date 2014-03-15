@@ -182,8 +182,7 @@ public class UserResourceRESTService {
 						new UsernamePassword(pUser.getUsername(), pUser.getPassword())).withTenantName(pUser.getUsername()).execute();		
 		logger.info(access.getUser().toString());
 		User user = keystone.users().show(access.getUser().getId()).execute();
-		//password is not transmitted anymore...
-		user.setPassword(pUser.getPassword());
+		
 		loginConfirmation.setUser(user);
 		loginConfirmation.setTenantName(pUser.getUsername());
 		return loginConfirmation;

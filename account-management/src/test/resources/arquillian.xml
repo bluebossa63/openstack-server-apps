@@ -33,12 +33,10 @@
        <configuration>
            <property name="httpPort">8080</property>
            <property name="allowConnectingToRunningServer">true</property>
-           <property name="jbossHome">C:\Users\daniele.NE\jboss-as-7.1.1.Final</property>
        </configuration>
         <!-- By default, arquillian will use the JBOSS_HOME environment variable.  Alternatively, the configuration below can be uncommented. -->
         <!--<configuration> -->
         <!--<property name="jbossHome">/path/to/jboss/as</property> -->
         <!--</configuration> -->
    </container>
-
 </arquillian>
