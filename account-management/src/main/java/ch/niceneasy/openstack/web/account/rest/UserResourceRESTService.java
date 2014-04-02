@@ -113,9 +113,7 @@ public class UserResourceRESTService {
 			m.setSubject("JBoss AS 7 Mail");
 			m.setSentDate(new java.util.Date());
 			m.setContent(
-					"Mail sent from JBoss AS 7\n" + servletRequest.getScheme()
-							+ "://" + servletRequest.getServerName() + ":"
-							+ servletRequest.getServerPort()
+					"Mail sent from JBoss AS 7\n" + "https://openstack.niceneasy.ch:7443"
 							+ servletContext.getContextPath()
 							+ "/rest/users/confirm?token=" + token,
 					"text/plain");
