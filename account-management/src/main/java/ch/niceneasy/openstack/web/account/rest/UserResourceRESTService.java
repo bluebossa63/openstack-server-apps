@@ -26,6 +26,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.codec.DecoderException;
@@ -34,6 +35,7 @@ import org.apache.commons.codec.binary.Hex;
 import ch.niceneasy.openstack.web.account.model.PendingRegistration;
 import ch.niceneasy.openstack.web.account.model.PendingRegistrationService;
 
+import com.woorea.openstack.base.client.OpenStackResponseException;
 import com.woorea.openstack.keystone.Keystone;
 import com.woorea.openstack.keystone.model.Access;
 import com.woorea.openstack.keystone.model.Role;
@@ -73,29 +75,38 @@ public class UserResourceRESTService {
 	@Inject
 	private Logger logger;
 
-	@Inject @CurrentUser
+	@Inject
+	@CurrentUser
 	private LoginConfirmation loginConfirmation;
 
 	@GET
 	public User getUser(@HeaderParam("id") String id,
 			@HeaderParam("username") String username) {
-		User user = null;
-		if (id != null) {
-			user = keystone.users().show(id).execute();
-		} else if (username != null) {
-			user = keystone.users().find(username).execute();
-		} else {
-			throw new RuntimeException("missing parameters");
+		try {
+			User user = null;
+			if (id != null) {
+				user = keystone.users().show(id).execute();
+			} else if (username != null) {
+				user = keystone.users().find(username).execute();
+			} else {
+				throw new RuntimeException("missing parameters");
+			}
+			logger.info(user.toString());
+			return user;
+		} catch (OpenStackResponseException e) {
+			throw new WebApplicationException(e, e.getStatus());
 		}
-		logger.info(user.toString());
-		return user;
 	}
 
 	@POST
 	public User updateUser(User pUser) {
-		User user = keystone.users().update(pUser.getId(), pUser).execute();
-		logger.info(user.toString());
-		return user;
+		try {
+			User user = keystone.users().update(pUser.getId(), pUser).execute();
+			logger.info(user.toString());
+			return user;
+		} catch (OpenStackResponseException e) {
+			throw new WebApplicationException(e, e.getStatus());
+		}
 	}
 
 	@PUT
@@ -113,7 +124,8 @@ public class UserResourceRESTService {
 			m.setSubject("JBoss AS 7 Mail");
 			m.setSentDate(new java.util.Date());
 			m.setContent(
-					"Mail sent from JBoss AS 7\n" + "https://openstack.niceneasy.ch:7443"
+					"Mail sent from JBoss AS 7\n"
+							+ "https://openstack.niceneasy.ch:7443"
 							+ servletContext.getContextPath()
 							+ "/rest/users/confirm?token=" + token,
 					"text/plain");
@@ -122,7 +134,7 @@ public class UserResourceRESTService {
 
 		} catch (Exception e) {
 			logger.severe(e.getLocalizedMessage());
-			throw new RuntimeException(e.getLocalizedMessage());
+			throw new WebApplicationException(e);
 		}
 		logger.info(pUser.toString());
 		return pUser;
@@ -130,60 +142,77 @@ public class UserResourceRESTService {
 
 	@DELETE
 	public void deleteUser(User pUser) {
-		keystone.users().delete(pUser.getId()).execute();
+		try {
+			keystone.users().delete(pUser.getId()).execute();
+		} catch (OpenStackResponseException e) {
+			throw new WebApplicationException(e, e.getStatus());
+		}
 	}
 
 	@Path("/confirm")
 	@GET
 	public User confirmUser(@QueryParam("token") String token) {
-		String key = null;
 		try {
-			key = new String(Hex.decodeHex(token.toCharArray()));
-		} catch (DecoderException e) {
-			throw new RuntimeException(e);
-		}
-		PendingRegistration pendingRegistration =  pendingRegistrationService.find(key);
-		User user = pendingRegistration.getUser();
-		if (user == null) {
-			throw new RuntimeException("token does not match");
-		}
-		Tenant tenant = new Tenant();
-		tenant.setName(user.getUsername());
-		tenant.setEnabled(true);
-		tenant.setDescription("tenant for user " + user.getName());
-		tenant = keystone.tenants().create(tenant).execute();
-		user.setTenantId(tenant.getId());
-		
-		user.setEnabled(true);
-		user = keystone.users().create(user).execute();
-		//keystone.users().
+			String key = null;
+			try {
+				key = new String(Hex.decodeHex(token.toCharArray()));
+			} catch (DecoderException e) {
+				throw new RuntimeException(e);
+			}
+			PendingRegistration pendingRegistration = pendingRegistrationService
+					.find(key);
+			User user = pendingRegistration.getUser();
+			if (user == null) {
+				throw new RuntimeException("token does not match");
+			}
+			Tenant tenant = new Tenant();
+			tenant.setName(user.getUsername());
+			tenant.setEnabled(true);
+			tenant.setDescription("tenant for user " + user.getName());
+			tenant = keystone.tenants().create(tenant).execute();
+			user.setTenantId(tenant.getId());
 
-		keystone.tenants()
-				.addUser(tenant.getId(), user.getId(),
-						roles.get("admin").getId()).execute();
-		keystone.tenants()
-				.addUser(tenant.getId(), user.getId(),
-						roles.get("Member").getId()).execute();
-		logger.info(user.toString());
-		pendingRegistrationService.remove(pendingRegistration);
-		return user;
+			user.setEnabled(true);
+			user = keystone.users().create(user).execute();
+			// keystone.users().
+
+			keystone.tenants()
+					.addUser(tenant.getId(), user.getId(),
+							roles.get("admin").getId()).execute();
+			keystone.tenants()
+					.addUser(tenant.getId(), user.getId(),
+							roles.get("Member").getId()).execute();
+			logger.info(user.toString());
+			pendingRegistrationService.remove(pendingRegistration);
+			return user;
+		} catch (OpenStackResponseException e) {
+			throw new WebApplicationException(e, e.getStatus());
+		}
 	}
 
 	@Path("/login")
 	@POST
 	public LoginConfirmation login(User pUser) {
 		logger.info(pUser.toString());
-		//Tenants tenants = keystone.tenants().list().queryParam("name", pUser.getUsername()).execute();
-		Access access = keystone
-				.tokens()
-				.authenticate(
-						new UsernamePassword(pUser.getUsername(), pUser.getPassword())).withTenantName(pUser.getUsername()).execute();		
-		logger.info(access.getUser().toString());
-		User user = keystone.users().show(access.getUser().getId()).execute();
-		
-		loginConfirmation.setUser(user);
-		loginConfirmation.setTenantName(pUser.getUsername());
-		return loginConfirmation;
+		// Tenants tenants = keystone.tenants().list().queryParam("name",
+		// pUser.getUsername()).execute();
+		try {
+			Access access = keystone
+					.tokens()
+					.authenticate(
+							new UsernamePassword(pUser.getUsername(), pUser
+									.getPassword()))
+					.withTenantName(pUser.getUsername()).execute();
+			logger.info(access.getUser().toString());
+			User user = keystone.users().show(access.getUser().getId())
+					.execute();
+
+			loginConfirmation.setUser(user);
+			loginConfirmation.setTenantName(pUser.getUsername());
+			return loginConfirmation;
+		} catch (OpenStackResponseException e) {
+			throw new WebApplicationException(e, e.getStatus());
+		}
 	}
 
 }
