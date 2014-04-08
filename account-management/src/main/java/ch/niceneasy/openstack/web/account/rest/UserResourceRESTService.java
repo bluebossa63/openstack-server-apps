@@ -1,11 +1,12 @@
+/*
+ * Copyright (c) 2014, daniele.ulrich@gmail.com, http://www.niceneasy.ch. All rights reserved.
+ */
 package ch.niceneasy.openstack.web.account.rest;
 
-import java.rmi.server.UID;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.ejb.Timeout;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.mail.Address;
@@ -14,7 +15,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.persistence.EntityManager;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -44,10 +44,9 @@ import com.woorea.openstack.keystone.model.User;
 import com.woorea.openstack.keystone.model.authentication.UsernamePassword;
 
 /**
- * JAX-RS Example
+ * The Class UserResourceRESTService.
  * 
- * This class produces a RESTful service to read the contents of the members
- * table.
+ * @author Daniele
  */
 @Path("/users")
 @Consumes({ "application/json" })
@@ -55,30 +54,48 @@ import com.woorea.openstack.keystone.model.authentication.UsernamePassword;
 @RequestScoped
 public class UserResourceRESTService {
 
+	/** The servlet request. */
 	@Context
 	private HttpServletRequest servletRequest;
+
+	/** The servlet context. */
 	@Context
 	private ServletContext servletContext;
 
+	/** The pending registration service. */
 	@Inject
 	PendingRegistrationService pendingRegistrationService;
 
+	/** The roles. */
 	@Inject
 	private Map<String, Role> roles;
 
+	/** The mail session. */
 	@Resource(mappedName = "java:jboss/mail/Default")
 	private Session mailSession;
 
+	/** The keystone. */
 	@Inject
 	private Keystone keystone;
 
+	/** The logger. */
 	@Inject
 	private Logger logger;
 
+	/** The login confirmation. */
 	@Inject
 	@CurrentUser
 	private LoginConfirmation loginConfirmation;
 
+	/**
+	 * Gets the user.
+	 * 
+	 * @param id
+	 *            the id
+	 * @param username
+	 *            the username
+	 * @return the user
+	 */
 	@GET
 	public User getUser(@HeaderParam("id") String id,
 			@HeaderParam("username") String username) {
@@ -98,6 +115,13 @@ public class UserResourceRESTService {
 		}
 	}
 
+	/**
+	 * Update user.
+	 * 
+	 * @param pUser
+	 *            the user
+	 * @return the user
+	 */
 	@POST
 	public User updateUser(User pUser) {
 		try {
@@ -109,6 +133,13 @@ public class UserResourceRESTService {
 		}
 	}
 
+	/**
+	 * Creates the user.
+	 * 
+	 * @param pUser
+	 *            the user
+	 * @return the user
+	 */
 	@PUT
 	public User createUser(User pUser) {
 		PendingRegistration pendingRegistration = new PendingRegistration(pUser);
@@ -140,6 +171,12 @@ public class UserResourceRESTService {
 		return pUser;
 	}
 
+	/**
+	 * Delete user.
+	 * 
+	 * @param pUser
+	 *            the user
+	 */
 	@DELETE
 	public void deleteUser(User pUser) {
 		try {
@@ -149,6 +186,13 @@ public class UserResourceRESTService {
 		}
 	}
 
+	/**
+	 * Confirm user.
+	 * 
+	 * @param token
+	 *            the token
+	 * @return the user
+	 */
 	@Path("/confirm")
 	@GET
 	public User confirmUser(@QueryParam("token") String token) {
@@ -190,6 +234,13 @@ public class UserResourceRESTService {
 		}
 	}
 
+	/**
+	 * Login.
+	 * 
+	 * @param pUser
+	 *            the user
+	 * @return the login confirmation
+	 */
 	@Path("/login")
 	@POST
 	public LoginConfirmation login(User pUser) {

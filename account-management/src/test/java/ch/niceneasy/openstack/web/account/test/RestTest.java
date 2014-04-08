@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2014, daniele.ulrich@gmail.com, http://www.niceneasy.ch. All rights reserved.
+ */
 package ch.niceneasy.openstack.web.account.test;
 
 import java.io.BufferedReader;
@@ -18,10 +21,17 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.woorea.openstack.keystone.model.Tenant;
 import com.woorea.openstack.keystone.model.User;
 
+/**
+ * The Class RestTest.
+ * 
+ * @author Daniele
+ */
 public class RestTest {
 
+	/** The default mapper. */
 	static ObjectMapper DEFAULT_MAPPER = new ObjectMapper();
 
+	/** The wrapped mapper. */
 	static ObjectMapper WRAPPED_MAPPER = new ObjectMapper();
 
 	static {
@@ -44,19 +54,35 @@ public class RestTest {
 
 	}
 
+	/**
+	 * Gets the context.
+	 * 
+	 * @param type
+	 *            the type
+	 * @return the context
+	 */
 	public static ObjectMapper getContext(Class<?> type) {
 		return type.getAnnotation(JsonRootName.class) == null ? DEFAULT_MAPPER
 				: DEFAULT_MAPPER;
 	}
 
+	/**
+	 * The Class Client.
+	 */
 	public class Client implements ClientInterface {
 
+		/* (non-Javadoc)
+		 * @see ch.niceneasy.openstack.web.account.test.ClientInterface#createUser(com.woorea.openstack.keystone.model.Tenant)
+		 */
 		@Override
 		public Tenant createUser(Tenant tenant) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
+		/* (non-Javadoc)
+		 * @see ch.niceneasy.openstack.web.account.test.ClientInterface#createUser(com.woorea.openstack.keystone.model.User)
+		 */
 		@Override
 		public User createUser(User user) {
 			// TODO Auto-generated method stub
@@ -65,6 +91,12 @@ public class RestTest {
 
 	}
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
 	public static void main(String[] args) {
 
 		try {

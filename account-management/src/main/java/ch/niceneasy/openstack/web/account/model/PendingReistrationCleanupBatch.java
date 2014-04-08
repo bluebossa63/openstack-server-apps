@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2014, daniele.ulrich@gmail.com, http://www.niceneasy.ch. All rights reserved.
+ */
 package ch.niceneasy.openstack.web.account.model;
 
 import java.util.Calendar;
@@ -8,12 +11,21 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+/**
+ * The Class PendingReistrationCleanupBatch.
+ * 
+ * @author Daniele
+ */
 @Singleton
 public class PendingReistrationCleanupBatch {
 
+	/** The em. */
 	@Inject
 	private EntityManager em;
 
+	/**
+	 * Clean up.
+	 */
 	@Schedule
 	public void cleanUp() {
 

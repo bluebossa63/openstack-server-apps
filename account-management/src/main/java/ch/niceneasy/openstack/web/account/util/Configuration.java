@@ -1,8 +1,9 @@
+/*
+ * Copyright (c) 2014, daniele.ulrich@gmail.com, http://www.niceneasy.ch. All rights reserved.
+ */
 package ch.niceneasy.openstack.web.account.util;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -26,24 +27,41 @@ import com.woorea.openstack.keystone.model.Roles;
 import com.woorea.openstack.keystone.model.User;
 import com.woorea.openstack.keystone.model.authentication.UsernamePassword;
 
+/**
+ * The Class Configuration.
+ * 
+ * @author Daniele
+ */
 @ApplicationScoped
 @Startup
 public class Configuration {
 
+	/** The pending confirmations. */
 	Map<String, User> pendingConfirmations = new HashMap<String, User>();
 
+	/** The configuration. */
 	private Map<String, String> configuration = new HashMap<String, String>();
+
+	/** The roles. */
 	private Map<String, Role> roles = new HashMap<String, Role>();
 
+	/** The instance. */
 	public static Configuration INSTANCE;
 
+	/**
+	 * Instantiates a new configuration.
+	 */
 	public Configuration() {
 		INSTANCE = this;
 	}
 
+	/** The logger. */
 	@Inject
 	private Logger logger;
 
+	/**
+	 * Fetch configuration.
+	 */
 	@PostConstruct
 	public void fetchConfiguration() {
 		Properties props = new Properties();
@@ -63,6 +81,13 @@ public class Configuration {
 		}
 	}
 
+	/**
+	 * Gets the login information.
+	 * 
+	 * @param point
+	 *            the point
+	 * @return the login information
+	 */
 	@Produces
 	@CurrentUser
 	LoginConfirmation getLoginInformation(InjectionPoint point) {
@@ -82,6 +107,13 @@ public class Configuration {
 		return loginConfirmation;
 	}
 
+	/**
+	 * Gets the string.
+	 * 
+	 * @param point
+	 *            the point
+	 * @return the string
+	 */
 	@Produces
 	public String getString(InjectionPoint point) {
 		String fieldName = point.getMember().getName();
@@ -89,6 +121,13 @@ public class Configuration {
 		return valueForFieldName;
 	}
 
+	/**
+	 * Gets the integer.
+	 * 
+	 * @param point
+	 *            the point
+	 * @return the integer
+	 */
 	@Produces
 	public int getInteger(InjectionPoint point) {
 		fetchConfiguration();
@@ -96,6 +135,13 @@ public class Configuration {
 		return Integer.parseInt(stringValue);
 	}
 
+	/**
+	 * Gets the keystone.
+	 * 
+	 * @param point
+	 *            the point
+	 * @return the keystone
+	 */
 	@Produces
 	public Keystone getKeystone(InjectionPoint point) {
 		Keystone keystone = new Keystone(configuration.get("keystoneAuthUrl"));
@@ -112,13 +158,29 @@ public class Configuration {
 		return keystone;
 	}
 
+	/**
+	 * Gets the pending confirmations.
+	 * 
+	 * @param point
+	 *            the point
+	 * @return the pending confirmations
+	 */
 	@Produces
 	public Map<String, User> getPendingConfirmations(InjectionPoint point) {
 		return pendingConfirmations;
 	}
 
-	public void resetConnection() {	}
+	/**
+	 * Reset connection.
+	 */
+	public void resetConnection() {
+	}
 
+	/**
+	 * Gets the roles.
+	 * 
+	 * @return the roles
+	 */
 	@Produces
 	public Map<String, Role> getRoles() {
 		return roles;

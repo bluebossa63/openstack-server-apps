@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2014, daniele.ulrich@gmail.com, http://www.niceneasy.ch. All rights reserved.
+ */
 package ch.niceneasy.openstack.web.account.rest;
 
 import static java.lang.annotation.ElementType.FIELD;
@@ -11,8 +14,13 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
+/**
+ * The Interface CurrentUser.
+ * 
+ * @author Daniele
+ */
 @Qualifier
 @Retention(RUNTIME)
-@Target({METHOD, FIELD, PARAMETER, TYPE})
+@Target({ METHOD, FIELD, PARAMETER, TYPE })
 public @interface CurrentUser {
 }
